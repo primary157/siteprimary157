@@ -37,6 +37,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'coisa',
     'inicial',
+    'poll',
 )
 
 MIDDLEWARE_CLASSES = (
