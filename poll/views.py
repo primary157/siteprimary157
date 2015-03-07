@@ -3,12 +3,33 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext, loader
 from poll.models import Choice, Question
 from django.core.urlresolvers import reverse
+from django.views import generic
+from poll.models import Choice, Question
+
+
+class IndexView(generic.ListView):
+    template_name = 'poll/index.html'
+    context_object_name = 'latest_question_list'
+
+    def get_queryset(self):
+        """Return the last five published questions."""
+        return Question.objects.order_by('-pub_date')[:5]
+
+
+class DetailView(generic.DetailView):
+    model = Question
+    template_name = 'poll/detail.html'
+
+
+class ResultsView(generic.DetailView):
+    model = Question
+    template_name = 'poll/results.html'
 
 
 def index(request):
     latest_question_list = Question.objects.order_by('-pub_date')[:5]
     template = loader.get_template('poll/index.html')
-    context = RequestContext(request, { #TODO: Make poll/index.html be recognized as a valid path
+    context = RequestContext(request, {
         'latest_question_list': latest_question_list,
     })
     return HttpResponse(template.render(context))
@@ -23,8 +44,8 @@ def detail(request, question_id):
 
 
 def results(request, question_id):
-    response = "You're looking at the results of question %s."
-    return HttpResponse(response % question_id)
+    question = get_object_or_404(Question, pk=question_id)
+    return render(request, 'poll/results.html', {'question': question})
 
 
 def vote(request, question_id):
